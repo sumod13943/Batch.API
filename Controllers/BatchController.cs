@@ -108,7 +108,7 @@ namespace BatchAPI.Controllers
                     }
                     else
                     {
-                        if (batch.ExpiryDate < DateTime.Now)
+                        if (batch.ExpiryDate < DateTime.Now) //expiry date check
                         {
                             return StatusCode(410,"Gone - the batch has been expired and is no longer available");
                         }
