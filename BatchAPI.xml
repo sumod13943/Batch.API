@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BatchAPI</name>
+    </assembly>
+    <members>
+        <member name="M:BatchAPI.Controllers.BatchController.Batch(BatchAPI.Model.Batch)">
+            <summary>
+            Create a new batch to upload files into.
+            </summary>
+            <param name="batch"></param>
+            <response code="201">Created</response>
+            <response code="400">Bad request - there are one or more errors in the specified patameters</response>
+            <response code="401">Unauthorised - either you have not provided any credentials, or your credentials are not recognised.</response>
+            <response code="403">Forbidden - you have been authorised, but you are not allowed to access this resource.</response>
+            <returns></returns>
+        </member>
+        <member name="M:BatchAPI.Controllers.BatchController.Batch(System.Guid)">
+            <summary>
+            Get details of the batch including links to all the files in the batch.
+            </summary>
+            <param name="batchId"> A batch ID</param>
+            <remarks>This get will include full details of the batch, for example it's status, the files in the batch.</remarks>
+            <response code="200">OK - Return details about the batch.</response>
+            <response code="400">Bad request - could be an invalid batch ID format. Batch IDs should be a GUID. A valid GUID that doesn't match a batch ID will return a 404.</response>
+            <response code="401">Unauthorised - either you have not provided any credentials, ot your credentials are not recognised.</response>
+            <response code="403">Forbidden - you have been authorised, but you are not allowed to access this resource.</response>
+            <response code="404">Not Found - Could be that the batch ID doesn't exist.</response>
+            <response code="410">Gone - the batch has been expired and is no longer available.</response>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
