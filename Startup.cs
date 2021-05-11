@@ -65,7 +65,7 @@ namespace BatchAPI
                         exception.Errors.Add(errors);
                     }
 
-                    return new BadRequestObjectResult(exception);
+                    return new BadRequestObjectResult(exception); // Contains the errors to be returned to the client.
                 };
             });
 

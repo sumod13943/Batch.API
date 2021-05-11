@@ -26,35 +26,54 @@ namespace BatchAPI.Model
 
         public class BatchValidator : AbstractValidator<Batch>
         {
+            private const string message = "Bad Request - there are one or more errors in the specified parameters";
             public BatchValidator()
             {
-                RuleFor(p => p.BusinessUnit).NotNull().WithMessage("Bad Request - there are one or more errors in the specified parameters");
-                RuleFor(p => p.BusinessUnit).NotEmpty().WithMessage("Bad Request - there are one or more errors in the specified parameters");
+                RuleFor(p => p.BusinessUnit).NotNull().WithMessage(message);
+                RuleFor(p => p.BusinessUnit).NotEmpty().WithMessage(message);
                 RuleFor(p => p.BatchId.ToString()).Must(ValidateGUID).WithErrorCode("Not a guid");
 
-                RuleFor(f => f.Attributes).Must((f, d) =>
-                {
-                    for (int i = 0; i < d.Count; i++)
-                    {
-                        if (String.IsNullOrEmpty(d[i].Key))
-                            return false;
-                    }
+                RuleForEach(x => x.Attributes)
+                            .ChildRules(testProperties =>
+                            {
+                                testProperties.RuleFor(testProperty => testProperty.Key)
+                                    .NotNull()
+                                    .NotEmpty()
+                                    .WithMessage(testProperty => message);
+                            });
 
-                    return true;
-                })
-                .WithMessage("Attribute key(s) cannot be empty.");
+                RuleForEach(x => x.Attributes)
+                            .ChildRules(testProperties =>
+                            {
+                                testProperties.RuleFor(testProperty => testProperty.Value)
+                                    .NotNull()
+                                    .NotEmpty()
+                                    .WithMessage(testProperty => message);
+                            });
 
-                RuleFor(f => f.Attributes).Must((f, d) =>
-                {
-                    for (int i = 0; i < d.Count; i++)
-                    {
-                        if (String.IsNullOrEmpty(d[i].Value))
-                            return false;
-                    }
+                //RuleFor(f => f.Attributes).Must((f, d) =>
+                //{
+                //    for (int i = 0; i < d.Count; i++)
+                //    {
+                //        if (String.IsNullOrEmpty(d[i].Key))
+                //            return false;
+                //    }
 
-                    return true;
-                })
-                .WithMessage("Attribute value(s) cannot be empty.");
+                //    return true;
+                //})
+                //.WithMessage("Attribute key(s) cannot be empty.");
+
+                //RuleFor(f => f.Attributes).Must((f, d) =>
+                //    {
+                //        for (int i = 0; i < d.Count; i++)
+                //        {
+                //            if (String.IsNullOrEmpty(d[i].Value))
+                //                return false;
+                //        }
+
+                //        return true;
+                //    })
+                //    .WithMessage("Attribute value(s) cannot be empty.");
 
             }
 
