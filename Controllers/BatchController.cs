@@ -15,6 +15,7 @@ namespace BatchAPI.Controllers
         private readonly IBatchData _batchData;
         private readonly ILogger<BatchController> _logger;
         private readonly string _logSource = "Batch.API";
+        private IBatchData service;
 
         public BatchController(IBatchData batchData, ILogger<BatchController> logger)
         {
@@ -84,6 +85,7 @@ namespace BatchAPI.Controllers
         public IActionResult Batch(Guid batchId)
         {
             _logger.Log(LogLevel.Information, "Getting batch with id={ID}", batchId);
+
             Batch batch = new Batch();
 
             try

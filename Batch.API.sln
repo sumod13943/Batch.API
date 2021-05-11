@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31025.194
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchAPI", "BatchAPI.csproj", "{95654744-46EF-4004-AFAA-741D6A24DD75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BatchAPI", "BatchAPI.csproj", "{95654744-46EF-4004-AFAA-741D6A24DD75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchAPITest", "..\BatchAPITest\BatchAPITest.csproj", "{221B0E86-08CB-4E61-8B59-104FD9FCF488}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{95654744-46EF-4004-AFAA-741D6A24DD75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95654744-46EF-4004-AFAA-741D6A24DD75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95654744-46EF-4004-AFAA-741D6A24DD75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{221B0E86-08CB-4E61-8B59-104FD9FCF488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{221B0E86-08CB-4E61-8B59-104FD9FCF488}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{221B0E86-08CB-4E61-8B59-104FD9FCF488}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{221B0E86-08CB-4E61-8B59-104FD9FCF488}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
