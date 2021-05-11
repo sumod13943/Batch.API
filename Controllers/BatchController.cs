@@ -1,12 +1,9 @@
 ﻿using BatchAPI.BatchData;
 using BatchAPI.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Diagnostics;
-using static BatchAPI.Model.Batch;
 
 namespace BatchAPI.Controllers
 {
