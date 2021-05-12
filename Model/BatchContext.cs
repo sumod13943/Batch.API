@@ -21,6 +21,11 @@ namespace BatchAPI.Model
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            var valueComparer = new ValueComparer<IList<string>>(
+                                (c1, c2) => c1.SequenceEqual(c2),
+                                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                                c => c.ToList());
+
             var splitStringConverter = new ValueConverter<IList<string>, string>(v => string.Join(";", v), v => v.Split(new[] { ';' }));
             builder.Entity<ACL>().Property(e => e.ReadUsers).HasConversion(splitStringConverter);//.Metadata.SetValueComparer(valueComparer);
             builder.Entity<ACL>().Property(e => e.ReadGroups).HasConversion(splitStringConverter);//.Metadata.SetValueComparer(valueComparer);

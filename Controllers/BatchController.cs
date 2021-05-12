@@ -14,8 +14,7 @@ namespace BatchAPI.Controllers
     {
         private readonly IBatchData _batchData;
         private readonly ILogger<BatchController> _logger;
-        private readonly string _logSource = "Batch.API";
-        private IBatchData service;
+        private readonly string _logSource = "Batch API";
 
         public BatchController(IBatchData batchData, ILogger<BatchController> logger)
         {
@@ -23,7 +22,7 @@ namespace BatchAPI.Controllers
             _logger = logger;
 
             if (!EventLog.SourceExists(_logSource))
-                EventLog.CreateEventSource(_logSource, "Logname");
+                EventLog.CreateEventSource(_logSource, "Logger");
         }
 
         //[HttpGet]
@@ -46,12 +45,16 @@ namespace BatchAPI.Controllers
         public IActionResult Batch(Batch batch)
         {
             _logger.Log(LogLevel.Information, "Adding a new batch");
+
             try
             {
                 if (ModelState.IsValid)
                 {
                     _batchData.AddBatch(batch);
                     CreatedAtActionResult result = new CreatedAtActionResult("Batch", "Batch", "", new { batchId = batch.BatchId });
+
+                    _logger.Log(LogLevel.Information, "New batch added");
+
                     return result;
                 }
                 else
@@ -84,42 +87,35 @@ namespace BatchAPI.Controllers
         [Route("{batchId}")]
         public IActionResult Batch(Guid batchId)
         {
-            _logger.Log(LogLevel.Information, "Getting batch with id={ID}", batchId);
+            if (batchId == Guid.Empty)
+            {
+                _logger.Log(LogLevel.Error, $"Bad Request - could be an invalid batch ID format. Batch IDs should be a GUID. A valid GUID that doesn't match a batch ID will return a 404");
+                return BadRequest("Bad Request - could be an invalid batch ID format. Batch IDs should be a GUID. A valid GUID that doesn't match a batch ID will return a 404");
+            }
 
-            Batch batch = new Batch();
+            _logger.Log(LogLevel.Information, "Getting batch with id={ID}", batchId);
 
             try
             {
-                if (ModelState.IsValid)
+                Batch batch = _batchData.GetBatch(batchId);
+
+                if (batch == null)
                 {
-                    if (batchId == Guid.Empty)
-                    {
-                        _logger.Log(LogLevel.Warning, $"Bad Request - could be an invalid batch ID format. Batch IDs should be a GUID. A valid GUID that doesn't match a batch ID will return a 404");
-                        return BadRequest("Bad Request - could be an invalid batch ID format. Batch IDs should be a GUID. A valid GUID that doesn't match a batch ID will return a 404");
-                    }
-
-                    batch = _batchData.GetBatch(batchId);
-
-                    if (batch == null)
-                    {
-                        _logger.Log(LogLevel.Warning, $"Batch with given id = {batchId} does not exists");
-                        return NotFound("Not- Found - Could that be the batch ID does not exists");
-                    }
-                    else
-                    {
-                        if (batch.ExpiryDate < DateTime.Now) //expiry date check
-                        {
-                            return StatusCode(410,"Gone - the batch has been expired and is no longer available");
-                        }
-                    }
-
-                    return Ok(batch);
+                    _logger.Log(LogLevel.Warning, $"Batch with given id = {batchId} does not exists");
+                    return NotFound("Not- Found - Could that be the batch ID does not exists");
                 }
                 else
                 {
-                    _logger.Log(LogLevel.Warning, $"Batch with given id = {batchId} does not exists.");
-                    return NotFound("Not - Found - Please check the format of Batch ID");
+                    if (batch.ExpiryDate < DateTime.Now) //expiry date check
+                    {
+                        _logger.Log(LogLevel.Warning, "Gone - the batch has been expired and is no longer available");
+                        return StatusCode(410, "Gone - the batch has been expired and is no longer available");
+                    }
                 }
+
+                _logger.Log(LogLevel.Information, "Batch details retrieved");
+                return Ok(batch);
+
             }
             catch (Exception ex)
             {

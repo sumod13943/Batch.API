@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -11,10 +14,12 @@ namespace BatchAPI.Extensions
     public class ExceptionMiddlewareExtensions
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger _logger;
 
-        public ExceptionMiddlewareExtensions(RequestDelegate next)
+        public ExceptionMiddlewareExtensions(RequestDelegate next, ILogger<Startup> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public Task Invoke(HttpContext context) => this.InvokeAsync(context);
@@ -29,6 +34,14 @@ namespace BatchAPI.Extensions
             {
                 await HandleExceptionAsync(httpContext, ex);
             }
+            finally
+            {
+                _logger.LogInformation(
+                        "Request {method} {url} => {statusCode}",
+                        httpContext.Request?.Method,
+                        httpContext.Request?.Path.Value,
+                        httpContext.Response?.StatusCode);
+            }
         }
 
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
@@ -38,16 +51,17 @@ namespace BatchAPI.Extensions
             var errorMessage = new
             {
                 correaltionId = Guid.NewGuid(),
-                    error = exception.Message,
-                    stack = exception.StackTrace,
-                    innerException = exception.InnerException
-                    
-                };
+                error = exception.Message,
+                stack = exception.StackTrace,
+                innerException = exception.InnerException
 
-                result = JsonConvert.SerializeObject(errorMessage);
+            };
+
+            result = JsonConvert.SerializeObject(errorMessage);
 
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "application/json";
+
             return context.Response.WriteAsync(result);
         }
 

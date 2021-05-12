@@ -12,8 +12,6 @@ namespace BatchAPI.BatchData
 
         public List<Batch> GetBatch()
         {
-            
-
             return batches;
         }
 

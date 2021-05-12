@@ -1,4 +1,5 @@
 using BatchAPI.BatchData;
+using BatchAPI.Extensions;
 using BatchAPI.Model;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace BatchAPI
 {
@@ -43,6 +45,8 @@ namespace BatchAPI
 
             services.AddDbContextPool<BatchContext>(options => options.UseSqlServer(Configuration.GetConnectionString("EmployeeConnectionString")));
 
+            services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
+
             services.AddLogging(p =>
             {
                 p.AddEventLog(); // Log to event viewer
@@ -50,14 +54,14 @@ namespace BatchAPI
 
             services.Configure<ApiBehaviorOptions>(options =>
             {
-                options.InvalidModelStateResponseFactory = actionContext =>
+                options.InvalidModelStateResponseFactory = context =>
                 {
                     Exceptions exception = new Exceptions();
                     exception.Errors = new List<Errors>();
 
                     exception.CorrelationId = Guid.NewGuid();
 
-                    foreach (var err in actionContext.ModelState)
+                    foreach (var err in context.ModelState)
                     {
                         Errors errors = new Errors();
                         errors.Source = err.Key;
@@ -65,10 +69,16 @@ namespace BatchAPI
                         exception.Errors.Add(errors);
                     }
 
+                    var _logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                    var ex = new Exception(context.ModelState.Values.First().Errors.First().ErrorMessage);
+
+                    _logger.Log(LogLevel.Error, ex, ex.Message);
+
                     return new BadRequestObjectResult(exception); // Contains the errors to be returned to the client.
                 };
             });
 
+           
             // services.Configure<ApiBehaviorOptions>(options =>
             //{
             //    options.InvalidModelStateResponseFactory = ctx => new ExceptionMiddlewareExtensions();
@@ -100,7 +110,9 @@ namespace BatchAPI
 
             app.UseAuthorization();
 
-            //app.UseExceptionMiddlewareExtensions();
+            //app.UseMiddleware<ExceptionMiddlewareExtensions>();
+
+            app.UseExceptionMiddlewareExtensions();
 
             app.UseEndpoints(endpoints =>
             {
