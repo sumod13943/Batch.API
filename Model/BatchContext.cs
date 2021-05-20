@@ -18,6 +18,7 @@ namespace BatchAPI.Model
         public DbSet<Batch> Batches { get; set; }
         public DbSet<ACL> ACLs { get; set; }
         public DbSet<Attributes> Attributes { get; set; }
+        public DbSet<BatchFile> BatchFiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

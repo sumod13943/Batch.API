@@ -22,6 +22,7 @@ namespace BatchAPI.Model
         public virtual ACL ACL { get; set; }
 
         public List<Attributes> Attributes { get; set; }
+
         public DateTime ExpiryDate { get; set; }
 
         public class BatchValidator : AbstractValidator<Batch>
@@ -86,6 +87,17 @@ namespace BatchAPI.Model
                 return GuidFormat;
             }
         }
+
+        public class BatchFileValidator : AbstractValidator<BatchFile>
+        {
+            private const string message = "Bad Request - Could be a bad batch ID; a batch ID that doesn't exist; a bad filename";
+            public BatchFileValidator()
+            {
+                RuleFor(p => p.FileName).NotNull().WithMessage(message);
+                RuleFor(p => p.FileName).NotEmpty().WithMessage(message);
+                RuleFor(p => p.FileType).NotEmpty().WithMessage("MIME type can not be empty");
+            }
+        }
     }
 
     public class ACL
@@ -124,5 +136,18 @@ namespace BatchAPI.Model
         //        RuleForEa
         //    }
         //}
+    }
+
+    public class BatchFile
+    {
+        [JsonIgnore]
+        public int Id { get; set; }
+        public string FileName { get; set; }
+        public string FileType { get; set; }
+        public string FileSize { get; set; }
+
+        [ForeignKey("BatchId")]
+        public Batch Batch { get; set; }
+
     }
 }

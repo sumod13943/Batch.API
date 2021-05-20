@@ -4,14 +4,16 @@ using BatchAPI.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BatchAPI.Migrations
 {
     [DbContext(typeof(BatchContext))]
-    partial class BatchContextModelSnapshot : ModelSnapshot
+    [Migration("20210519145924_Change in Batchfile")]
+    partial class ChangeinBatchfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,6 +71,9 @@ namespace BatchAPI.Migrations
                     b.Property<int?>("ACLId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("BatchFileId")
+                        .HasColumnType("int");
+
                     b.Property<string>("BusinessUnit")
                         .HasColumnType("nvarchar(max)");
 
@@ -78,6 +83,8 @@ namespace BatchAPI.Migrations
                     b.HasKey("BatchId");
 
                     b.HasIndex("ACLId");
+
+                    b.HasIndex("BatchFileId");
 
                     b.ToTable("Batches");
                 });
@@ -89,9 +96,6 @@ namespace BatchAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Guid?>("BatchId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
 
@@ -102,8 +106,6 @@ namespace BatchAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BatchId");
 
                     b.ToTable("BatchFiles");
                 });
@@ -121,16 +123,13 @@ namespace BatchAPI.Migrations
                         .WithMany()
                         .HasForeignKey("ACLId");
 
-                    b.Navigation("ACL");
-                });
-
-            modelBuilder.Entity("BatchAPI.Model.BatchFile", b =>
-                {
-                    b.HasOne("BatchAPI.Model.Batch", "Batch")
+                    b.HasOne("BatchAPI.Model.BatchFile", "BatchFile")
                         .WithMany()
-                        .HasForeignKey("BatchId");
+                        .HasForeignKey("BatchFileId");
 
-                    b.Navigation("Batch");
+                    b.Navigation("ACL");
+
+                    b.Navigation("BatchFile");
                 });
 
             modelBuilder.Entity("BatchAPI.Model.Batch", b =>

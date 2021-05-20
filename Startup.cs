@@ -1,6 +1,7 @@
 using BatchAPI.BatchData;
 using BatchAPI.Extensions;
 using BatchAPI.Model;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,8 +13,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
+using static BatchAPI.Model.Batch;
 
 namespace BatchAPI
 {
@@ -35,9 +39,12 @@ namespace BatchAPI
             //services.AddSingleton<IBatchData, MockBatchData>();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc(name: "v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Batch API", Version = "V1" });
-                c.EnableAnnotations();
-                c.IncludeXmlComments(@"D:\Sums\Practice\UKHG\Batch.API\BatchAPI.xml");
+                c.SwaggerDoc(name: "v2", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Batch API", Version = "v2" });
+                //c.EnableAnnotations();
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
 
             services.AddControllers()
@@ -47,6 +54,8 @@ namespace BatchAPI
 
             services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
 
+            services.AddTransient<IValidator<BatchFile>, BatchFileValidator>();
+
             services.AddLogging(p =>
             {
                 p.AddEventLog(); // Log to event viewer
@@ -54,31 +63,34 @@ namespace BatchAPI
 
             services.Configure<ApiBehaviorOptions>(options =>
             {
+
                 options.InvalidModelStateResponseFactory = context =>
                 {
-                    Exceptions exception = new Exceptions();
-                    exception.Errors = new List<Errors>();
+                    return CustomErrorResponse(context);
+                    //    Exceptions exception = new Exceptions();
+                    //    exception.Errors = new List<Errors>();
 
-                    exception.CorrelationId = Guid.NewGuid();
+                    //    exception.CorrelationId = Guid.NewGuid();
 
-                    foreach (var err in context.ModelState)
-                    {
-                        Errors errors = new Errors();
-                        errors.Source = err.Key;
-                        errors.Description = err.Value.Errors.First().ErrorMessage;
-                        exception.Errors.Add(errors);
-                    }
+                    //    foreach (var err in context.ModelState)
+                    //    {
+                    //        Errors errors = new Errors();
+                    //        errors.Source = err.Key;
+                    //        errors.Description = err.Value.Errors.First().ErrorMessage;
+                    //        exception.Errors.Add(errors);
+                    //    }
 
-                    var _logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
-                    var ex = new Exception(context.ModelState.Values.First().Errors.First().ErrorMessage);
+                    //    var _logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                    //    var ex = new Exception(context.ModelState.Values.First().Errors.First().ErrorMessage);
 
-                    _logger.Log(LogLevel.Error, ex, ex.Message);
+                    //    _logger.Log(LogLevel.Error, ex, ex.Message);
 
-                    return new BadRequestObjectResult(exception); // Contains the errors to be returned to the client.
+                    //    return new BadRequestObjectResult(exception); // Contains the errors to be returned to the client.
                 };
             });
 
-           
+            //services.AddCors(options => options.AddDefaultPolicy(
+            //    builder=>builder.AllowAnyOrigin()));
             // services.Configure<ApiBehaviorOptions>(options =>
             //{
             //    options.InvalidModelStateResponseFactory = ctx => new ExceptionMiddlewareExtensions();
@@ -95,13 +107,18 @@ namespace BatchAPI
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseExceptionMiddlewareExtensions();
-
             app.UseSwagger();
+            //app.UseSwagger(c=>
+            //{
+            //    c.SerializeAsV2 = true;
+            //});
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint(url: "/swagger/v1/swagger.json", name: "Batch API");
+                c.SwaggerEndpoint(url: "/swagger/v2/swagger.json", name: "Batch API");
+
+                //c.SwaggerEndpoint("v1/swagger.json", "Batch API V1");
+                //c.RoutePrefix = string.Empty;
             });
 
             app.UseHttpsRedirection();
@@ -118,6 +135,29 @@ namespace BatchAPI
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private BadRequestObjectResult CustomErrorResponse(ActionContext actionContext)
+        {
+            Exceptions exception = new Exceptions();
+            exception.Errors = new List<Errors>();
+
+            exception.CorrelationId = Guid.NewGuid();
+
+            foreach (var err in actionContext.ModelState)
+            {
+                Errors errors = new Errors();
+                errors.Source = err.Key;
+                errors.Description = err.Value.Errors.First().ErrorMessage;
+                exception.Errors.Add(errors);
+            }
+
+            var _logger = actionContext.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+            var ex = new Exception(actionContext.ModelState.Values.First().Errors.First().ErrorMessage);
+
+            _logger.Log(LogLevel.Error, ex, ex.Message);
+
+            return new BadRequestObjectResult(exception);
         }
     }
 }

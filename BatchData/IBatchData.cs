@@ -13,5 +13,7 @@ namespace BatchAPI.BatchData
         Batch AddBatch(Batch batch);
 
         Batch GetBatch(Guid batchId);
+
+        BatchFile AddBatchFile(Guid batchId, string fileName, string mimeType, string contentSize);
     }
 }

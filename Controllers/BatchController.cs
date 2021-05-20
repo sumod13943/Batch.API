@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using static BatchAPI.Model.Batch;
 
 namespace BatchAPI.Controllers
 {
@@ -14,15 +15,15 @@ namespace BatchAPI.Controllers
     {
         private readonly IBatchData _batchData;
         private readonly ILogger<BatchController> _logger;
-        private readonly string _logSource = "Batch API";
+        //private readonly string _logSource = "Batch API";
 
         public BatchController(IBatchData batchData, ILogger<BatchController> logger)
         {
             _batchData = batchData;
             _logger = logger;
 
-            if (!EventLog.SourceExists(_logSource))
-                EventLog.CreateEventSource(_logSource, "Logger");
+            //if (!EventLog.SourceExists(_logSource))
+            //    EventLog.CreateEventSource(_logSource, "Logger");
         }
 
         //[HttpGet]
@@ -116,6 +117,54 @@ namespace BatchAPI.Controllers
                 _logger.Log(LogLevel.Information, "Batch details retrieved");
                 return Ok(batch);
 
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, ex.Message);
+                return BadRequest();
+            }
+        }
+
+        /// <summary>
+        /// Add a file to the batch
+        /// </summary>
+        /// <param name="batchId">A Batch ID</param>
+        /// <param name="fileName">Filename for the new file. Must be unique in the batch (but can be the same as another file in another batch). Filenames don't include a path</param>
+        /// <param name="mimeType">Optional. The MIME content type of the file. The default type is application/octet-stream'</param>
+        /// <param name="contentSize">The final size of the file in bytes.</param>
+        /// <remarks>Creates a file in the batch. To upload the content of the file,one or more uploadBlockofFile requests will need to be made followed by a 'putBlocksinFile' request to complete the file. </remarks>
+        /// <response code="201">Created</response>
+        /// <response code="400">Bad request - Could be a bad batch ID; a batch ID that doesn't exist; a bad filename</response>
+        /// <response code="401">Unauthorised - either you have not provided any credentials, or your credentials are not recognised.</response>
+        /// <response code="403">Forbidden - you have been authorised, but you are not allowed to access this resource.</response>
+        /// <returns></returns>
+
+        [HttpPost]
+        [Route("{batchId}/{fileName}")]
+        public IActionResult Batch(Guid batchId, string fileName,
+                                [FromHeader(Name = "X-Content-Size")] string contentSize,
+                                [FromHeader(Name = "X-MIME-Type")] string mimeType = "application/octet-stream")
+        {
+            ModelState.Clear();
+            _logger.Log(LogLevel.Information, "Adding a new batch file");
+
+            BatchFileValidator validator = new BatchFileValidator();
+
+            try
+            {
+                BatchFile batchFile = _batchData.AddBatchFile(batchId, fileName, mimeType, contentSize);
+                var result = validator.Validate(batchFile);
+                if (result.IsValid)
+                {
+                    _logger.Log(LogLevel.Information, "New batch file added");
+                    return Ok();
+                }
+                else
+                {
+                    ModelState.AddModelError("Batch", "Could be a bad batch ID; a batch ID that doesn't exist; a bad filename");
+                    _logger.Log(LogLevel.Warning, $"Bad Request, Error(s):- Batch Id doesn't exists.");
+                    return BadRequest("Bad Request - Could be a bad batch ID; a batch ID that doesn't exist; a bad filename");
+                }
             }
             catch (Exception ex)
             {

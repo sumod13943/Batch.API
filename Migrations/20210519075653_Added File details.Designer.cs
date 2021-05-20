@@ -4,14 +4,16 @@ using BatchAPI.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BatchAPI.Migrations
 {
     [DbContext(typeof(BatchContext))]
-    partial class BatchContextModelSnapshot : ModelSnapshot
+    [Migration("20210519075653_Added File details")]
+    partial class AddedFiledetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,16 +128,16 @@ namespace BatchAPI.Migrations
 
             modelBuilder.Entity("BatchAPI.Model.BatchFile", b =>
                 {
-                    b.HasOne("BatchAPI.Model.Batch", "Batch")
-                        .WithMany()
+                    b.HasOne("BatchAPI.Model.Batch", null)
+                        .WithMany("BatchFiles")
                         .HasForeignKey("BatchId");
-
-                    b.Navigation("Batch");
                 });
 
             modelBuilder.Entity("BatchAPI.Model.Batch", b =>
                 {
                     b.Navigation("Attributes");
+
+                    b.Navigation("BatchFiles");
                 });
 #pragma warning restore 612, 618
         }

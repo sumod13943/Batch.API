@@ -4,14 +4,16 @@ using BatchAPI.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BatchAPI.Migrations
 {
     [DbContext(typeof(BatchContext))]
-    partial class BatchContextModelSnapshot : ModelSnapshot
+    [Migration("20210519150818_Changed relation of Batchfile")]
+    partial class ChangedrelationofBatchfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,6 +93,9 @@ namespace BatchAPI.Migrations
 
                     b.Property<Guid?>("BatchId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BatchfId")
+                        .HasColumnType("int");
 
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");

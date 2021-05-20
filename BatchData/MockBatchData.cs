@@ -45,5 +45,10 @@ namespace BatchAPI.BatchData
         {
             return batches.SingleOrDefault(p => p.BatchId.Equals(batchId));
         }
+
+        public BatchFile AddBatchFile(Guid batchId, string fileName, string mimeType, string contentSize)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

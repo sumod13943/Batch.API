@@ -29,5 +29,25 @@
             <response code="410">Gone - the batch has been expired and is no longer available.</response>
             <returns></returns>
         </member>
+        <member name="M:BatchAPI.Controllers.BatchController.Batch(System.Guid,System.String,System.String,System.String)">
+            <summary>
+            Add a file to the batch
+            </summary>
+            <param name="batchId">A Batch ID</param>
+            <param name="fileName">Filename for the new file. Must be unique in the batch (but can be the same as another file in another batch). Filenames don't include a path</param>
+            <param name="mimeType">Optional. The MIME content type of the file. The default type is application/octet-stream'</param>
+            <param name="contentSize">The final size of the file in bytes.</param>
+            <remarks>Creates a file in the batch. To upload the content of the file,one or more uploadBlockofFile requests will need to be made followed by a 'putBlocksinFile' request to complete the file. </remarks>
+            <response code="201">Created</response>
+            <response code="400">Bad request - Could be a bad batch ID; a batch ID that doesn't exist; a bad filename</response>
+            <response code="401">Unauthorised - either you have not provided any credentials, or your credentials are not recognised.</response>
+            <response code="403">Forbidden - you have been authorised, but you are not allowed to access this resource.</response>
+            <returns></returns>
+        </member>
+        <member name="M:BatchAzureBlob.AzureBlob.InitializeBlobContainer(System.String,System.String,System.String)">
+            <summary>
+            set up references to the container, etc.
+            </summary>
+        </member>
     </members>
 </doc>

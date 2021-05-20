@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
+using Azure.Identity;
+using System;
 
 namespace BatchAPI
 {
@@ -16,6 +18,13 @@ namespace BatchAPI
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
+                        .ConfigureAppConfiguration((context, config) =>
+                        {
+                            var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("VaultUri"));
+                            config.AddAzureKeyVault(
+                            keyVaultEndpoint,
+                            new DefaultAzureCredential());
+                        })
                         .ConfigureWebHostDefaults(webBuilder =>
                         {
                             webBuilder.UseStartup<Startup>();
@@ -26,21 +35,12 @@ namespace BatchAPI
                             logging.ClearProviders();
                             logging.AddConfiguration(context.Configuration.GetSection("Logging"));
 
+                            logging.AddEventLog();
+
                             // add built-in providers manually, as needed 
-                            logging.AddEventLog(p => p.SourceName = "Batch API");
-                            logging.AddEventLog(p => p.LogName = "Logger");
+                            //logging.AddEventLog(p => p.SourceName = "Batch API");
+                            //logging.AddEventLog(p => p.LogName = "Logger");
                             logging.AddFilter("Microsoft", LogLevel.Information);
-                            //Filtering the below category from logging
-                            //logging.AddFilter("Microsoft", LogLevel.Information);
-                            //logging.AddFilter("Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker", LogLevel.Information);
-                            //logging.AddFilter("Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor", LogLevel.Information);
-                            //logging.AddFilter("Microsoft.EntityFrameworkCore.Infrastructure", LogLevel.Information);
-                            ////logging.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
-                            //logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Information);
-                            //logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Information);
-
-
-
 
                         });
         }
